@@ -9,6 +9,8 @@ The system is implemented as a group of interrelated devices (modules):
 ### Head unit
 
 ### Wired sensor
+It is intended for leak detection.
+Detailed sensor description https://github.com/leech001/LeakControl/tree/master/wired_module
 
 ### Wireless sensor
 It is intended for leak detection and alarm signal transmission to the head unit.
