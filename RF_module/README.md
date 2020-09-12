@@ -1,35 +1,43 @@
-# Радио модуль для контроля за утечками
+# Radio module for leak monitoring
 
-Модуль представляет собой плату основанную на микроконтроллере STM32F030F4P6 и радио модуле NRF24L01.
-Логика работы модуля по умолчанию следующая:
-1. Глубокий сон в течении одной минуты;
-2. Опрос датчика влажности;
-3. В случае превышения порогово значения отправка сообщения через NRF24L01;
+The module is a board based on STM32F030F4P6 microcontroller and NRF24L01 radio module.
+The module is designed to detect water leaks and notify the head unit about them.
+This version of the module is powered by the CR2032 battery which should be enough for 6 months of operation.
 
-## Общая схема датчика
-Сам проект радио датчика лежит на EasyEDA  https://easyeda.com/leech001/leakcontrol
-![shema]()
+The default operation logic of the module is as follows:
+1. Deep sleep for one minute;
+2. humidity sensor interrogation;
+3. In case the threshold value is exceeded, send a message via NRF24L01 to the head unit which controls the devices;
 
-![pcb]()
+## Sensor general circuit
+The radio sensor design itself is on EasyEDA https://easyeda.com/leech001/leakcontrol.
 
-## Описание программного обеспечения
+Scheme
+![shema](https://raw.githubusercontent.com/leech001/LeakControl/master/RF_module/img/sheme.png)
 
-Доступен исходный код проекта основанный на библиотеке HAL.
-Сам проект сгенерирован в STM32CubeMX.
+Board layout
+![pcb](https://raw.githubusercontent.com/leech001/LeakControl/master/RF_module/img/pcb.png)
 
-Настройка индентификатора трубы
+Gerber file in gerber directory.
+
+## Software description
+
+A project source code based on the HAL library is available.
+The project itself is generated in STM32CubeMX.
+
+Setting up the pipe identifier
 ```
 const uint64_t pipe1 = 0xF0F0F0F0A1LL;
 ```
-Сброс флага сна
+Sleep Flag Reset
 ```
 __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
 ```
-Настройка порога срабатывания датчика
+Adjusting the sensor threshold
 ```
 if (adc > 200) {
 ```
-Инициализация радиомодуля, установка скорости, установка канала и открытия трубы на передачу.
+Initialization of the radio module, speed setting, installing the channel and opening the pipe to the transmission.
 ```
 NRF_Init();
 setDataRate(RF24_250KBPS);
@@ -37,4 +45,6 @@ setChannel(76);
 openWritingPipe(pipe1);
 ```
 
-Для тех кто не силен доступен готовый бинарник который нужно просто зашить в МК.
+For those who are not strong, there is a ready-made binary that just needs to be write in microcontroler. Binary directory ``bin``.
+
+Translated with https://www.deepl.com/ru/translator (free version)
