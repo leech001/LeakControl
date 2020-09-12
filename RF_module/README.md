@@ -13,10 +13,13 @@ The default operation logic of the module is as follows:
 The radio sensor design itself is on EasyEDA https://easyeda.com/leech001/leakcontrol.
 
 Scheme
+
 ![shema](https://raw.githubusercontent.com/leech001/LeakControl/master/RF_module/img/sheme.png)
 
 Board layout
+
 ![pcb](https://raw.githubusercontent.com/leech001/LeakControl/master/RF_module/img/pcb.png)
+
 
 Gerber file in gerber directory.
 
