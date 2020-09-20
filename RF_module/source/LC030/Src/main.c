@@ -26,6 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "ee.h"
 #include "nrf24l01.h"
 /* USER CODE END Includes */
 
@@ -35,6 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define VREFINT_CAL_ADDR 0x1FFFF7BA
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -44,7 +46,12 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint16_t adc = 0;
+static uint8_t *Unique_ID = (uint8_t *) UID_BASE;
+static uint16_t *vrefint_cal = (uint16_t *) VREFINT_CAL_ADDR;
+
+uint16_t water = 0;
+uint16_t voltage = 0;
+static uint8_t battery[2] = {0,};
 uint8_t nrf_data[32] = {0,};
 
 //        === NRF Setup ===
@@ -103,14 +110,26 @@ int main(void)
     //Clear standby flag
     __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
 
+    // Init EEPROM emulation
+    ee_init();
+
     // Run ADC
     HAL_ADCEx_Calibration_Start(&hadc);
     HAL_ADC_Start(&hadc);
     HAL_ADC_PollForConversion(&hadc, 100);
-    adc = HAL_ADC_GetValue(&hadc);
+    water = HAL_ADC_GetValue(&hadc);
+    HAL_ADC_Start(&hadc);
+    HAL_ADC_PollForConversion(&hadc, 100);
+    voltage = 3300 * (*vrefint_cal) / HAL_ADC_GetValue(&hadc);
     HAL_ADC_Stop(&hadc);
 
-    if (adc > 200) {
+    ee_read(0, 1, &battery[0]);
+
+    battery[1] = voltage / 100;
+
+    if (water > 200 || battery[1] < battery[0]) {
+        ee_format(false);
+        ee_write(0, 1, &battery[1]);
         HAL_GPIO_WritePin(NRF_PWR_GPIO_Port, NRF_PWR_Pin, GPIO_PIN_SET);
         while (!isChipConnected());
         NRF_Init();
@@ -119,11 +138,16 @@ int main(void)
         openWritingPipe(pipe1);
         maskIRQ(true, true, true);
 
-        nrf_data[0] = adc >> 8;
-        nrf_data[1] = adc & 0xff;
+        // Add message
+        memcpy(nrf_data, Unique_ID, 12);
+        nrf_data[12] = water >> 8;
+        nrf_data[13] = water & 0xff;
+        nrf_data[14] = voltage >> 8;
+        nrf_data[15] = voltage & 0xff;
+
         for (uint8_t i = 0; i < 5; i++) {
-            write(&nrf_data, strlen((const char *) nrf_data));
-            HAL_Delay(200);
+            write(&nrf_data, 32);
+            HAL_Delay(1000);
         }
     }
     HAL_PWR_EnterSTANDBYMode();

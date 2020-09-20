@@ -89,9 +89,26 @@ async def check_nrf_message():
             print('Receive!')
             while nrf.any():
                 buf = nrf.recv()
-                water_level = int.from_bytes(bytearray([buf[0], buf[1]]), "big")
+
+                id_sensor_1 = int.from_bytes(buf[0:3], "big")
+                id_sensor_2 = int.from_bytes(buf[4:7], "big")
+                id_sensor_3 = int.from_bytes(buf[8:11], "big")
+                id_sensor = str(id_sensor_1) + str(id_sensor_2) + str(id_sensor_3)
+                print("ID sensor= %s" % id_sensor)
+
+                for i in range(len(buf)):
+                    print(i, buf[i])
+
+                water_level = int.from_bytes(bytearray([buf[12], buf[13]]), "big")
                 print("Water level= %i" % water_level)
-                client.publish(config.HAMQTTPrefix + "/water", "%i" % water_level)
+
+                battery = int.from_bytes(bytearray([buf[14], buf[15]]), "big")
+                battery_voltage = battery / 1000
+                print("Battery voltage= %f" % battery_voltage)
+
+                client.publish(config.HAMQTTPrefix + "/sensor" + "/" + id_sensor + "/water", "%i" % water_level)
+                client.publish(config.HAMQTTPrefix + "/sensor" + "/" + id_sensor + "/battery", "%f" % battery_voltage)
+
         await asyncio.sleep(0.1)
 
 
