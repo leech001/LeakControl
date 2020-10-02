@@ -100,14 +100,28 @@ async def check_nrf_message():
                     print(i, buf[i])
 
                 water_level = int.from_bytes(bytearray([buf[12], buf[13]]), "big")
+                humidity = water_level * 100 / 4096
                 print("Water level= %i" % water_level)
 
                 battery = int.from_bytes(bytearray([buf[14], buf[15]]), "big")
                 battery_voltage = battery / 1000
                 print("Battery voltage= %f" % battery_voltage)
 
-                client.publish(config.HAMQTTPrefix + "/sensor" + "/" + id_sensor + "/water", "%i" % water_level)
-                client.publish(config.HAMQTTPrefix + "/sensor" + "/" + id_sensor + "/battery", "%f" % battery_voltage)
+                sensor_1 = '{"name": "nrf_' + id_sensor + '_humidity",' \
+                           ' "unique_id": "nrf_' + id_sensor + '_humidity",' \
+                           ' "unit_of_measurement": "%",' \
+                           ' "device_class": "humidity",' \
+                           ' "state_topic": "homeassistant/sensor/nrf_' + id_sensor + '_humidity/state"}'
+                client.publish("homeassistant/sensor/nrf_" + id_sensor + "_humidity/config", sensor_1)
+                client.publish("homeassistant/sensor/nrf_" + id_sensor + "_humidity/state", str(humidity))
+
+                sensor_2 = '{"name": "nrf_' + id_sensor + '_voltage",' \
+                           ' "unique_id": "nrf_' + id_sensor + '_voltage",' \
+                           ' "unit_of_measurement": "V",' \
+                           ' "device_class": "battery",' \
+                           ' "state_topic": "homeassistant/sensor/nrf_' + id_sensor + '_voltage/state"}'
+                client.publish("homeassistant/sensor/nrf_" + id_sensor + "_voltage/config", sensor_2)
+                client.publish("homeassistant/sensor/nrf_" + id_sensor + "_voltage/state", str(battery_voltage))
 
         await asyncio.sleep(0.1)
 
