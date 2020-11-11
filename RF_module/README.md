@@ -49,5 +49,3 @@ openWritingPipe(pipe1);
 ```
 
 For those who are not strong, there is a ready-made binary that just needs to be write in microcontroler. Binary directory ``bin``.
-
-Translated with https://www.deepl.com/ru/translator (free version)
