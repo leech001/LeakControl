@@ -15,7 +15,4 @@ Detailed sensor description https://github.com/leech001/LeakControl/tree/master/
 
 ### Wireless sensor
 It is intended for leak detection and alarm signal transmission to the head unit.
-Detailed sensor description https://github.com/leech001/LeakControl/tree/master/RF_module.
-
-
-Translated with www.DeepL.com/Translator (free version)
+Detailed sensor description https://github.com/leech001/rf-leak-module
