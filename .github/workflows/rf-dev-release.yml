@@ -1,0 +1,38 @@
+name: RF Development Release
+
+on:
+  push:
+    branches: [ rf-module ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Toolchain
+      run: sudo apt-get -y install gcc-arm-none-eabi
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/RF_module/source/LC030
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      
+    - name: Build
+      working-directory: ${{runner.workspace}}/RF_module/source/LC030
+      shell: bash
+      run: cmake --build . --config $BUILD_TYPE --target LC030.elf -- -j 3
+
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Development Build"
+        files: |
+          ${{runner.workspace}}/RF_module/source/LC030/*.hex
+          ${{runner.workspace}}/RF_module/source/LC030/*.bin
